@@ -30,7 +30,7 @@ public class WishRestController {
     @GetMapping()
     public ResponseEntity<List<WishDto>> getWish(HttpServletRequest httpServletRequest) throws UnsupportedEncodingException {
 
-        String token=httpServletRequest.getHeader("Authorization");
+        String token = httpServletRequest.getHeader("Authorization");
         DecodedToken decoded = DecodedToken.getDecoded(token);
 
         return ResponseEntity.ok(this.wishServiceImp.getActiveWish(decoded.username));
@@ -39,22 +39,21 @@ public class WishRestController {
     @PostMapping("/add-book/{bookId}")
     public ResponseEntity<WishDto> addBookToWish(HttpServletRequest httpServletRequest,
                                                  @PathVariable Long bookId) throws UnsupportedEncodingException {
-        String token=httpServletRequest.getHeader("Authorization");
+        String token = httpServletRequest.getHeader("Authorization");
         DecodedToken decoded = DecodedToken.getDecoded(token);
 
-        if(bookId !=null)
-        {
-            return ResponseEntity.ok(wishServiceImp.addBookToWish(decoded.username,bookId));
+        if (bookId != null) {
+            return ResponseEntity.ok(wishServiceImp.addBookToWish(decoded.username, bookId));
         }
         return ResponseEntity.badRequest().build();
     }
 
     @DeleteMapping("/delete-book/{wishId}")
     public ResponseEntity<Boolean> deleteBookFromWish(HttpServletRequest httpServletRequest, @PathVariable(name = "wishId", required = true) Long wishId) throws UnsupportedEncodingException {
-        String token=httpServletRequest.getHeader("Authorization");
+        String token = httpServletRequest.getHeader("Authorization");
         DecodedToken decoded = DecodedToken.getDecoded(token);
 
-        if(wishId !=null) {
+        if (wishId != null) {
             DeleteBookFromWish deleteBook = new DeleteBookFromWish(decoded.userId, wishId);
             return ResponseEntity.ok(wishServiceImp.deleteBookFromWish(deleteBook));
         }

@@ -1,8 +1,6 @@
 package com.lms.api;
 
 import com.llq.springfilter.boot.Filter;
-import com.lms.dto.BookDto;
-import com.lms.dto.BorrowDto;
 import com.lms.dto.BorrowDto;
 import com.lms.dto.exception.NotFoundException;
 import com.lms.model.Borrow;
@@ -10,7 +8,6 @@ import com.lms.service.ExcelService;
 import com.lms.service.imp.BorrowServiceImp;
 import com.lms.util.ApiPaths;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +34,6 @@ public class BorrowRestController {
 	private final BorrowServiceImp borrowServiceImp;
 	private final ExcelService excelService;
 
-	// http://localhost:8081/api/borrow
 	@GetMapping()
 	public ResponseEntity<List<BorrowDto>> getAll() throws NotFoundException {
 		List<BorrowDto> borrowDtos = borrowServiceImp.getAll();
