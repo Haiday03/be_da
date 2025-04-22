@@ -145,7 +145,7 @@ public class BookRestController {
 	@ResponseStatus(HttpStatus.OK)
 	public ResponseEntity<String> uploadImage(HttpServletRequest request) throws ServletException, IOException {
 		try {
-			String uploadPath = "C:\\Projects\\Bao_cao_do_an\\Library-Management\\frontend\\src\\assets\\uploads";
+			String uploadPath = "D:\\datn\\Sourcode\\fe_da\\src\\assets\\uploads";
 
 			File uploadDir = new File(uploadPath);
 			if (!uploadDir.exists()) {
