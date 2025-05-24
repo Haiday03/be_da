@@ -83,7 +83,8 @@ public class BorrowServiceImp implements BorrowService{
 		if(borrowDto.getRating() != 0 && borrowOpt.get().getRating() == 0){
 			borrowDto.setReviewedDate(new Date());
 			Optional<Book> book = bookRepository.findById(borrowDto.getBookId());
-			int totalRating = borrowRepository.getTotalRating(borrowOpt.get().getBookId());
+			Integer totalRatingObj = borrowRepository.getTotalRating(borrowOpt.get().getBookId());
+			int totalRating = (totalRatingObj != null) ? totalRatingObj : 1;
 			int numberOfRatings = borrowRepository.getNumberOfRatings(borrowOpt.get().getBookId());
 
 			float rating = borrowDto.getRating();
