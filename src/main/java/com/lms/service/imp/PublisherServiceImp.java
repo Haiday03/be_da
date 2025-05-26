@@ -13,17 +13,22 @@ import com.lms.repository.PublisherRepository;
 import com.lms.repository.UserRepository;
 import com.lms.service.PublisherService;
 
+import com.lms.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -116,5 +121,42 @@ public class PublisherServiceImp implements PublisherService {
         Page<Publisher> entityPage = publisherRepository.findAll(spec, pageable);
         List<Publisher> entities = entityPage.getContent();
         return new PageImpl<>(modelMapper.map(entities, new TypeToken<List<PublisherDto>>() {}.getType()), pageable, entityPage.getTotalElements());
+    }
+
+    public Page<PublisherDto> search(PublisherSearchDto publisherSearchDto) {
+        Sort sort = Utils.generatedSort(publisherSearchDto.getSort());
+        Pageable pageable = PageRequest.of(publisherSearchDto.getPage(), publisherSearchDto.getLimit(), sort);
+        Specification<Publisher> specification = this.getSearchSpecification(publisherSearchDto);
+
+        return publisherRepository.findAll(specification, pageable).map(item -> modelMapper.map(item, PublisherDto.class));
+    }
+
+    private Specification<Publisher> getSearchSpecification(PublisherSearchDto publisherSearchDto) {
+
+        return new Specification<Publisher>() {
+            @Override
+            public Predicate toPredicate(Root<Publisher> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+                List<Predicate> predicates = new ArrayList<>();
+
+                if (Strings.isNotBlank(publisherSearchDto.getCode())) {
+                    predicates.add(criteriaBuilder.like(root.get("code"), "%" + publisherSearchDto.getCode() + "%"));
+                }
+
+                if (Strings.isNotBlank(publisherSearchDto.getName())) {
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%" + publisherSearchDto.getName() + "%"));
+                }
+
+                if (Strings.isNotBlank(publisherSearchDto.getEmail())) {
+                    predicates.add(criteriaBuilder.like(root.get("email"), "%" + publisherSearchDto.getEmail() + "%"));
+                }
+
+                if (Strings.isNotBlank(publisherSearchDto.getPhoneNumber())) {
+                    predicates.add(criteriaBuilder.like(root.get("phoneNumber"), "%" + publisherSearchDto.getPhoneNumber() + "%"));
+                }
+
+                return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+            }
+        };
     }
 }

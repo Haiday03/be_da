@@ -2,24 +2,32 @@ package com.lms.service.imp;
 
 import com.llq.springfilter.boot.Filter;
 import com.lms.dto.CategoryDto;
+import com.lms.dto.CategorySearchDto;
+import com.lms.dto.CategoryDto;
 import com.lms.dto.exception.LogicalException;
 import com.lms.dto.exception.NotFoundException;
 import com.lms.model.Book;
 import com.lms.model.Category;
+import com.lms.model.Category;
 import com.lms.repository.BookRepository;
 import com.lms.repository.CategoryRepository;
+import com.lms.repository.CategoryRepository;
 import com.lms.service.CategoryService;
+import com.lms.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,6 +111,37 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> entities = entityPage.getContent();
         return new PageImpl<>(modelMapper.map(entities, new TypeToken<List<CategoryDto>>() {}.getType()), pageable, entityPage.getTotalElements());
     }
+
+
+    public Page<CategoryDto> search(CategorySearchDto categorySearchDto) {
+        Sort sort = Utils.generatedSort(categorySearchDto.getSort());
+        Pageable pageable = PageRequest.of(categorySearchDto.getPage(), categorySearchDto.getLimit(), sort);
+        Specification<Category> specification = this.getSearchSpecification(categorySearchDto);
+
+        return repository.findAll(specification, pageable).map(item -> modelMapper.map(item, CategoryDto.class));
+    }
+
+    private Specification<Category> getSearchSpecification(CategorySearchDto categorySearchDto) {
+
+        return new Specification<Category>() {
+            @Override
+            public Predicate toPredicate(Root<Category> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+                List<Predicate> predicates = new ArrayList<>();
+
+                if (Strings.isNotBlank(categorySearchDto.getCode())) {
+                    predicates.add(criteriaBuilder.like(root.get("code"), "%" + categorySearchDto.getCode() + "%"));
+                }
+
+                if (Strings.isNotBlank(categorySearchDto.getName())) {
+                    predicates.add(criteriaBuilder.like(root.get("name"), "%" + categorySearchDto.getName() + "%"));
+                }
+
+                return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+            }
+        };
+    }
+
 
     public List<Category> getTop5(){
         return repository.findFirst5ByOrderByNumberOfLoansDesc();

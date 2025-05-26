@@ -3,6 +3,7 @@ package com.lms.api;
 import com.llq.springfilter.boot.Filter;
 import com.lms.dto.CategoryDto;
 import com.lms.dto.CategoryDto;
+import com.lms.dto.CategorySearchDto;
 import com.lms.dto.exception.NotFoundException;
 import com.lms.model.Category;
 import com.lms.service.imp.CategoryServiceImpl;
@@ -66,6 +67,12 @@ public class CategoryRestController {
 	@GetMapping("/get/page")
 	public ResponseEntity<Page<CategoryDto>> pageQuery(@Filter Specification<Category> spec, @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 		Page<CategoryDto> bookDtoPage = categoryServiceImpl.findByCondition(spec, pageable);
+		return ResponseEntity.ok(bookDtoPage);
+	}
+
+	@PostMapping("/search")
+	public ResponseEntity<Page<CategoryDto>> search(@RequestBody CategorySearchDto categorySearchDto) {
+		Page<CategoryDto> bookDtoPage = categoryServiceImpl.search(categorySearchDto);
 		return ResponseEntity.ok(bookDtoPage);
 	}
 

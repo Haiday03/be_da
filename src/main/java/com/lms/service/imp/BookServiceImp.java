@@ -14,12 +14,12 @@ import com.lms.ml.SlopeOne;
 import com.lms.model.Borrow;
 import com.lms.model.Category;
 import com.lms.repository.*;
+import com.lms.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -28,6 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lms.model.Author;
 import com.lms.model.Book;
 import com.lms.service.BookService;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 @Service
 @Transactional
@@ -164,6 +169,47 @@ public class BookServiceImp implements BookService {
 		List<Book> bookOneDtos= this.bookRepository.getRecentSales();
 		BookForDashboard[] bookForDashboards = modelMapper.map(bookOneDtos, BookForDashboard[].class);
 		return  bookForDashboards;
+	}
+
+	@Override
+	public Page<BookDto> search(BookSearchDto bookSearchDto) {
+		Sort sort = Utils.generatedSort(bookSearchDto.getSort());
+		Pageable pageable = PageRequest.of(bookSearchDto.getPage(), bookSearchDto.getLimit(), sort);
+		Specification<Book> specification = this.getSearchSpecification(bookSearchDto);
+
+		return bookRepository.findAll(specification, pageable).map(item -> modelMapper.map(item, BookDto.class));
+	}
+
+	private Specification<Book> getSearchSpecification(BookSearchDto bookSearchDto) {
+
+		return new Specification<Book>() {
+			@Override
+			public Predicate toPredicate(Root<Book> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+				List<Predicate> predicates = new ArrayList<>();
+
+				if (Strings.isNotBlank(bookSearchDto.getCode())) {
+					predicates.add(criteriaBuilder.like(root.get("code"), "%" + bookSearchDto.getCode() + "%"));
+				}
+
+				if (Strings.isNotBlank(bookSearchDto.getName())) {
+					predicates.add(criteriaBuilder.like(root.get("name"), "%" + bookSearchDto.getName() + "%"));
+				}
+
+				if (Strings.isNotBlank(bookSearchDto.getCategoryId())) {
+					predicates.add(criteriaBuilder.equal(root.get("categoryId"), bookSearchDto.getCategoryId()));
+				}
+
+				if (Strings.isNotBlank(bookSearchDto.getPublisherId())) {
+					predicates.add(criteriaBuilder.equal(root.get("publisherId"), bookSearchDto.getPublisherId()));
+				}
+
+				if (Strings.isNotBlank(bookSearchDto.getPublishingYear())) {
+					predicates.add(criteriaBuilder.equal(root.get("publishingYear"), bookSearchDto.getPublishingYear()));
+				}
+				return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+			}
+		};
 	}
 
 	public Page<BookDto> findByCondition(@Filter Specification<Book> spec, Pageable pageable) {

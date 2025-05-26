@@ -2,6 +2,7 @@ package com.lms.api;
 
 import com.llq.springfilter.boot.Filter;
 import com.lms.dto.NewDto;
+import com.lms.dto.NewSearchDto;
 import com.lms.dto.exception.NotFoundException;
 import com.lms.model.NewEntity;
 import com.lms.service.imp.NewServiceImp;
@@ -75,6 +76,12 @@ public class NewRestController {
 	@GetMapping("/get/page")
 	public ResponseEntity<Page<NewDto>> pageQuery(@Filter Specification<NewEntity> spec, @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 		Page<NewDto> bookDtoPage = newServiceImp.findByCondition(spec, pageable);
+		return ResponseEntity.ok(bookDtoPage);
+	}
+
+	@PostMapping("/search")
+	public ResponseEntity<Page<NewDto>> search(@RequestBody NewSearchDto newSearchDto) {
+		Page<NewDto> bookDtoPage = newServiceImp.search(newSearchDto);
 		return ResponseEntity.ok(bookDtoPage);
 	}
 }

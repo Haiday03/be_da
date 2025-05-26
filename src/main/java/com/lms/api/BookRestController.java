@@ -140,6 +140,11 @@ public class BookRestController {
 		return ResponseEntity.ok(bookDtoPage);
 	}
 
+	@PostMapping("/search")
+	public ResponseEntity<Page<BookDto>> search(@RequestBody BookSearchDto bookSearchDto) {
+		Page<BookDto> res = bookServiceImp.search(bookSearchDto);
+		return ResponseEntity.ok(res);
+	}
 
 	@PostMapping("/upload/image")
 	@ResponseStatus(HttpStatus.OK)

@@ -84,4 +84,10 @@ public class AuthorRestController {
 		return ResponseEntity.ok(bookDtoPage);
 	}
 
+	@PostMapping("/search")
+	public ResponseEntity<Page<AuthorDto>> search(@RequestBody AuthorSearchDto authorSearchDto) {
+		Page<AuthorDto> bookDtoPage = authorServiceImp.search(authorSearchDto);
+		return ResponseEntity.ok(bookDtoPage);
+	}
+
 }

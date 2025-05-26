@@ -1,9 +1,14 @@
 package com.lms.service.imp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -14,7 +19,9 @@ import com.lms.dto.exception.NotFoundException;
 import com.lms.model.Book;
 import com.lms.model.Category;
 import com.lms.repository.BookRepository;
+import com.lms.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.*;
@@ -126,5 +133,42 @@ public class AuthorServiceImp implements AuthorService{
 		Page<Author> entityPage = authorRepository.findAll(spec, pageable);
 		List<Author> entities = entityPage.getContent();
 		return new PageImpl<>(modelMapper.map(entities, new TypeToken<List<AuthorDto>>() {}.getType()), pageable, entityPage.getTotalElements());
+	}
+
+	public Page<AuthorDto> search(AuthorSearchDto authorSearchDto) {
+		Sort sort = Utils.generatedSort(authorSearchDto.getSort());
+		Pageable pageable = PageRequest.of(authorSearchDto.getPage(), authorSearchDto.getLimit(), sort);
+		Specification<Author> specification = this.getSearchSpecification(authorSearchDto);
+
+		return authorRepository.findAll(specification, pageable).map(item -> modelMapper.map(item, AuthorDto.class));
+	}
+
+	private Specification<Author> getSearchSpecification(AuthorSearchDto authorSearchDto) {
+
+		return new Specification<Author>() {
+			@Override
+			public Predicate toPredicate(Root<Author> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+				List<Predicate> predicates = new ArrayList<>();
+
+				if (Strings.isNotBlank(authorSearchDto.getCode())) {
+					predicates.add(criteriaBuilder.like(root.get("code"), "%" + authorSearchDto.getCode() + "%"));
+				}
+
+				if (Strings.isNotBlank(authorSearchDto.getName())) {
+					predicates.add(criteriaBuilder.like(root.get("name"), "%" + authorSearchDto.getName() + "%"));
+				}
+
+				if (Strings.isNotBlank(authorSearchDto.getEmail())) {
+					predicates.add(criteriaBuilder.like(root.get("email"), "%" + authorSearchDto.getEmail() + "%"));
+				}
+
+				if (Strings.isNotBlank(authorSearchDto.getPhoneNumber())) {
+					predicates.add(criteriaBuilder.like(root.get("phoneNumber"), "%" + authorSearchDto.getPhoneNumber() + "%"));
+				}
+
+				return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+			}
+		};
 	}
 }

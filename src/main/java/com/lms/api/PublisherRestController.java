@@ -82,4 +82,10 @@ public class PublisherRestController {
         Page<PublisherDto> bookDtoPage = publisherServiceImp.findByCondition(spec, pageable);
         return ResponseEntity.ok(bookDtoPage);
     }
+
+    @PostMapping("/search")
+    public ResponseEntity<Page<PublisherDto>> search(@RequestBody PublisherSearchDto publisherSearchDto) {
+        Page<PublisherDto> bookDtoPage = publisherServiceImp.search(publisherSearchDto);
+        return ResponseEntity.ok(bookDtoPage);
+    }
 }

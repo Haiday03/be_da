@@ -7,6 +7,7 @@ import com.lms.dto.*;
 import com.lms.dto.exception.NotFoundException;
 
 import com.lms.model.Book;
+import org.springframework.data.domain.Page;
 
 
 public interface BookService {
@@ -24,5 +25,7 @@ public interface BookService {
 
 	public BookRecDto[] getRecommended(BookOneDto bookOneDto);
 	public BookForDashboard[] getRecentSales();
+
+	public Page<BookDto> search(BookSearchDto bookSearchDto);
 
 }
