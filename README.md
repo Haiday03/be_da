@@ -77,4 +77,4 @@ To deploy the application to a live system, you will need to do the following:
 
 ## Authors
 
--   **Hamza Jashari** - _Initial work_ - [Github](https://github.com/hamzajashari)
+Ninh Văn Hải
