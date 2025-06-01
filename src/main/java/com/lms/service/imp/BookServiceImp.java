@@ -207,6 +207,10 @@ public class BookServiceImp implements BookService {
 				if (Strings.isNotBlank(bookSearchDto.getPublishingYear())) {
 					predicates.add(criteriaBuilder.equal(root.get("publishingYear"), bookSearchDto.getPublishingYear()));
 				}
+
+				if (Strings.isNotBlank(bookSearchDto.getCurrentBookId())) {
+					predicates.add(criteriaBuilder.notEqual(root.get("id"), bookSearchDto.getCurrentBookId()));
+				}
 				return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
 			}
 		};

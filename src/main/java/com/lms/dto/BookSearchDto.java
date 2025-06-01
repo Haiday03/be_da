@@ -14,6 +14,7 @@ public class BookSearchDto {
     private String categoryId;
     private String publisherId;
     private String publishingYear;
+    private String currentBookId;
     private Integer page;
     private Integer limit;
     private String sort;
