@@ -42,6 +42,8 @@ public class BookOneDto {
 
 	private int rating;
 
+	private int loaned;
+
 	@NotNull
 	private Long categoryId;
 	@NotNull

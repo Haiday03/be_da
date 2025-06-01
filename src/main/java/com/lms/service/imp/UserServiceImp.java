@@ -95,7 +95,7 @@ public class UserServiceImp implements UserService {
 
 	public Boolean update(String username, @Valid UserDto userDto) throws NotFoundException {
 
-		LibraryUser libraryUser = userRepository.findById(Long.valueOf(username)).orElseThrow(()->new UserNotFoundException(username));
+		LibraryUser libraryUser = userRepository.findByUsername(username).orElseThrow(()->new UserNotFoundException(username));
 
 		LibraryUser user = modelMapper.map(userDto, LibraryUser.class);
 		user.setId(libraryUser.getId());
