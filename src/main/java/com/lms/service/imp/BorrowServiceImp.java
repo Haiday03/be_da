@@ -1,28 +1,32 @@
 package com.lms.service.imp;
 
 import com.llq.springfilter.boot.Filter;
-import com.lms.dto.BorrowDto;
+import com.lms.dto.*;
 import com.lms.dto.exception.LogicalException;
 import com.lms.dto.exception.NotEnoughQuantityException;
 import com.lms.dto.exception.NotFoundException;
-import com.lms.model.Book;
-import com.lms.model.Borrow;
-import com.lms.model.Category;
-import com.lms.model.LibraryUser;
+import com.lms.model.*;
 import com.lms.repository.BookRepository;
 import com.lms.repository.BorrowRepository;
 import com.lms.repository.CategoryRepository;
 import com.lms.repository.UserRepository;
 import com.lms.service.BorrowService;
+import com.lms.util.Utils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -240,4 +244,52 @@ public class BorrowServiceImp implements BorrowService{
 		return result;
 	}
 
+	public Page<BorrowDto> search(BorrowSearchDto authorSearchDto) {
+		Sort sort = Utils.generatedSort(authorSearchDto.getSort());
+		Pageable pageable = PageRequest.of(authorSearchDto.getPage(), authorSearchDto.getLimit(), sort);
+		Specification<Borrow> specification = this.getSearchSpecification(authorSearchDto);
+
+		return borrowRepository.findAll(specification, pageable).map(item -> modelMapper.map(item, BorrowDto.class));
+	}
+
+	private Specification<Borrow> getSearchSpecification(BorrowSearchDto newSearchDto) {
+
+		return new Specification<>() {
+			@Override
+			public Predicate toPredicate(Root<Borrow> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+				List<Predicate> predicates = new ArrayList<>();
+
+				Join<Borrow, LibraryUser> borrowerJoin = root.join("borrower", JoinType.INNER);
+				if (Strings.isNotBlank(newSearchDto.getUsername())) {
+					predicates.add(criteriaBuilder.like(borrowerJoin.get("username"), "%" + newSearchDto.getUsername() + "%"));
+				}
+
+				if (Strings.isNotBlank(newSearchDto.getStatus())) {
+					predicates.add(criteriaBuilder.equal(root.get("status"), newSearchDto.getStatus()));
+				}
+
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+
+
+				LocalDateTime from = (StringUtils.hasText(newSearchDto.getFromDate())) ? LocalDateTime.parse(newSearchDto.getFromDate(), formatter) : null;
+				LocalDateTime to = (StringUtils.hasText(newSearchDto.getToDate())) ? LocalDateTime.parse(newSearchDto.getToDate(), formatter) : null;
+
+				ZoneId zoneId = ZoneId.systemDefault(); // hoặc tùy theo múi giờ dữ liệu
+
+				Date fromDate = (from != null) ? Date.from(from.atZone(zoneId).toInstant()) : null;
+				Date toDate = (to != null) ? Date.from(to.atZone(zoneId).toInstant()) : null;
+
+				if (from != null && to != null) {
+					predicates.add(criteriaBuilder.between(root.get("createdDate"), fromDate, toDate));
+				} else if (fromDate != null) {
+					predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), fromDate));
+				} else if (toDate != null) {
+					predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), toDate));
+				}
+
+				return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+			}
+		};
+	}
 }

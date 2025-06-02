@@ -2,6 +2,7 @@ package com.lms.api;
 
 import com.llq.springfilter.boot.Filter;
 import com.lms.dto.BorrowDto;
+import com.lms.dto.BorrowSearchDto;
 import com.lms.dto.exception.NotFoundException;
 import com.lms.model.Borrow;
 import com.lms.service.ExcelService;
@@ -121,5 +122,11 @@ public class BorrowRestController {
 	@GetMapping("/review/{bookId}")
 	public ResponseEntity<List<Borrow>> getReviewsByBookId(@PathVariable(name = "bookId", required = true) Long bookId) {
 		return ResponseEntity.ok(borrowServiceImp.getReviewsByBook(bookId));
+	}
+
+	@PostMapping("/search")
+	public ResponseEntity<Page<BorrowDto>> search(@RequestBody BorrowSearchDto newSearchDto) {
+		Page<BorrowDto> bookDtoPage = borrowServiceImp.search(newSearchDto);
+		return ResponseEntity.ok(bookDtoPage);
 	}
 }
