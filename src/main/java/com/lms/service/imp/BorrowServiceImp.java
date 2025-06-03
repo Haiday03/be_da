@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -269,16 +270,20 @@ public class BorrowServiceImp implements BorrowService{
 					predicates.add(criteriaBuilder.equal(root.get("status"), newSearchDto.getStatus()));
 				}
 
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+				LocalDate from = (StringUtils.hasText(newSearchDto.getFromDate()))
+						? LocalDate.parse(newSearchDto.getFromDate(), formatter)
+						: null;
 
-				LocalDateTime from = (StringUtils.hasText(newSearchDto.getFromDate())) ? LocalDateTime.parse(newSearchDto.getFromDate(), formatter) : null;
-				LocalDateTime to = (StringUtils.hasText(newSearchDto.getToDate())) ? LocalDateTime.parse(newSearchDto.getToDate(), formatter) : null;
+				LocalDate to = (StringUtils.hasText(newSearchDto.getToDate()))
+						? LocalDate.parse(newSearchDto.getToDate(), formatter)
+						: null;
 
-				ZoneId zoneId = ZoneId.systemDefault(); // hoặc tùy theo múi giờ dữ liệu
+				ZoneId zoneId = ZoneId.systemDefault(); // Hoặc chọn ZoneId.of("Asia/Ho_Chi_Minh")
 
-				Date fromDate = (from != null) ? Date.from(from.atZone(zoneId).toInstant()) : null;
-				Date toDate = (to != null) ? Date.from(to.atZone(zoneId).toInstant()) : null;
+				Date fromDate = (from != null) ? Date.from(from.atStartOfDay(zoneId).toInstant()) : null;
+				Date toDate = (to != null) ? Date.from(to.atStartOfDay(zoneId).toInstant()) : null;
 
 				if (from != null && to != null) {
 					predicates.add(criteriaBuilder.between(root.get("createdDate"), fromDate, toDate));
