@@ -55,4 +55,8 @@ public final class ApiPaths {
 	public static final class CategoryCtrl {
 		public static final String CTRL = BASE_PATH + "/category";
 	}
+
+	public static final class PaymentCtrl {
+		public static final String CTRL = BASE_PATH + "/payment";
+	}
 }
