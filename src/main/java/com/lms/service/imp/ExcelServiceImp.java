@@ -36,9 +36,6 @@ public class ExcelServiceImp implements ExcelService {
 
 		List<Borrow> listBorrow = borrowRepository.findAll(spec);
 
-//		row = sheet.createRow(0);
-//		cell = row.createCell(0);
-//		cell.setCellValue("Dữ liệu");
 
 		String[] arrHeader = {"Tên sách", "Số lượng", "Người mượn", "Ngày mượn", "Ngày trả", "Trang thái"};
 		createHeader(arrHeader, sheet);
